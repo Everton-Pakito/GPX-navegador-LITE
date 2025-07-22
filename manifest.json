@@ -1,6 +1,6 @@
 {
-  "name": "GPX Navigator LITE",
-  "short_name": "GPXNavLite",
+  "name": "GPX Navigator",
+  "short_name": "GPXNav",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#eef",

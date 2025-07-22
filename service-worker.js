@@ -1,10 +1,11 @@
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open('lite-cache').then(cache => {
+    caches.open('multi-cache').then(cache => {
       return cache.addAll([
         './',
         './index.html',
         './style.css',
+        './app.js',
         './manifest.json',
       ]);
     })
