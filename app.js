@@ -17,6 +17,9 @@ document.getElementById('gpxInput').addEventListener('change', (event) => {
       gpxFiles.push({ name: file.name, content: e.target.result });
       updateGPXList();
     };
+    reader.onerror = () => {
+      alert('Erro ao ler o arquivo: ' + file.name);
+    };
     reader.readAsText(file);
   });
 });
@@ -35,7 +38,8 @@ function updateGPXList() {
   });
 }
 
-function loadGPX(index) {
+// Tornar a função global
+window.loadGPX = function(index) {
   const gpxContent = gpxFiles[index].content;
   if (window.gpxLayer) map.removeLayer(window.gpxLayer);
 
@@ -44,8 +48,13 @@ function loadGPX(index) {
   }).on('loaded', function(e) {
     map.fitBounds(e.target.getBounds());
     speak('Rota carregada com sucesso.');
+
+    // Tentar entrar em tela cheia
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
   }).addTo(map);
-}
+};
 
 function speak(message) {
   const synth = window.speechSynthesis;
