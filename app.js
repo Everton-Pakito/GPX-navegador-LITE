@@ -198,13 +198,16 @@ window.loadGPX = function(index) {
     // Criar grupo de camadas
     currentGpxLayer = L.layerGroup();
     const latlngs = [];
+    const bounds = L.latLngBounds();
 
     // Processar pontos de trilha
     for (let i = 0; i < trackPoints.length; i++) {
       const lat = parseFloat(trackPoints[i].getAttribute('lat'));
       const lon = parseFloat(trackPoints[i].getAttribute('lon'));
       if (!isNaN(lat) && !isNaN(lon)) {
-        latlngs.push([lat, lon]);
+        const latlng = L.latLng(lat, lon);
+        latlngs.push(latlng);
+        bounds.extend(latlng);
       }
     }
 
@@ -223,34 +226,30 @@ window.loadGPX = function(index) {
       const lat = parseFloat(wayPoints[i].getAttribute('lat'));
       const lon = parseFloat(wayPoints[i].getAttribute('lon'));
       if (!isNaN(lat) && !isNaN(lon)) {
+        const latlng = L.latLng(lat, lon);
         const name = wayPoints[i].getElementsByTagName('name')[0]?.textContent || 'Waypoint';
-        const marker = L.marker([lat, lon]).bindPopup(name);
+        const marker = L.marker(latlng).bindPopup(name);
         currentGpxLayer.addLayer(marker);
-        latlngs.push([lat, lon]);
+        bounds.extend(latlng);
       }
     }
 
-    if (latlngs.length === 0) {
+    if (bounds.isValid()) {
+      // Adicionar ao mapa e ajustar visualização
+      currentGpxLayer.addTo(map);
+      map.fitBounds(bounds.pad(0.1));
+      
+      showMessage('Rota carregada com sucesso: ' + gpxFiles[index].name, 'success');
+      speak('Rota carregada com sucesso.');
+
+      // Tentar entrar em tela cheia (opcional)
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {
+          // Ignorar erro silenciosamente
+        });
+      }
+    } else {
       showMessage('Nenhuma coordenada válida encontrada no arquivo', 'error');
-      return;
-    }
-
-    // Adicionar ao mapa e ajustar visualização
-    currentGpxLayer.addTo(map);
-    
-    if (latlngs.length > 0) {
-      const group = new L.featureGroup([currentGpxLayer]);
-      map.fitBounds(group.getBounds().pad(0.1));
-    }
-
-    showMessage('Rota carregada com sucesso: ' + gpxFiles[index].name, 'success');
-    speak('Rota carregada com sucesso.');
-
-    // Tentar entrar em tela cheia (opcional)
-    if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen().catch(() => {
-        // Ignorar erro silenciosamente
-      });
     }
 
   } catch (error) {
